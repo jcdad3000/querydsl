@@ -1,7 +1,9 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -353,7 +355,55 @@ class QuerydslApplicationTests {
 		Integer ageParam =10;
 
 		List<Member> result = searchMember1(usernameParam,ageParam);
+		assertThat(result.size()).isEqualTo(1);
 
+	}
+
+	private List<Member> searchMember1(String usernameParam, Integer ageParam) {
+		BooleanBuilder builder = new BooleanBuilder();
+		if (usernameParam !=null){
+			builder.and(member.username.eq(usernameParam));
+		}
+
+		if(ageParam !=null){
+			builder.and(member.age.eq(ageParam));
+		}
+
+		return queryFactory
+				.selectFrom(member)
+				.where(builder)
+				.fetch();
+	}
+
+	@Test
+	public void dynamicQuery_WhereParam(){
+		String usernameParam = "member1";
+		Integer ageParam =10;
+
+		List<Member> result = searchMember2(usernameParam,ageParam);
+		assertThat(result.size()).isEqualTo(1);
+
+	}
+
+	private List<Member> searchMember2(String userCond, Integer ageCond) {
+		return queryFactory
+				.selectFrom(member)
+				.where(usernameEq(userCond),ageEq(ageCond))
+				.fetch();
+	}
+
+	private Predicate ageEq(Integer ageCond) {
+		if(ageCond==null){
+			return null;
+		}
+		return member.age.eq(ageCond);
+	}
+
+	private Predicate usernameEq(String userCond) {
+		if(userCond==null){
+			return null;
+		}
+		return member.username.eq(userCond);
 	}
 
 }
